@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+	
+	<title>Zwierciadło płaskie</title>
+	
+	<meta name="description" content="Opis w Google" />
+	<meta name="keywords" content="słowa, kluczowe, wypisane, po, porzecinku" />
+	<link rel="stylesheet" href="style.css">
+	
+</head>
+
+<body>
+	<ul>
+		<a href="FlatMirror.html"><li>Zwierciadło płaskie</li></a>
+		<a href="CurvedMirror.html"><li>Zwierciadło kuliste</li></a>
+		<a href="ConvergingLens.html"><li>Soczewka skupiająca</li></a>
+		<a href="DivergingLens.html"><li>Soczewka rozpraszająca</li></a>
+	</ul>
+	
+	<h2 class="title">Zwierciadło płaskie</h2><br />
+
+	<canvas width="900" height="600" id="canvas"></canvas>
+
+	<script type="text/javascript">
+      	
+      	var canvas = document.getElementById('canvas');
+
+      	var parametersColor="#c9cfd8";
+      	var linesColor="#c45050";
+      	var mirrorColor="SkyBlue";
+      	
+      	//Browser detection:
+      	var isChrome = !!window.chrome && !!window.chrome.webstore;
+      	var isFirefox = typeof InstallTrigger !== 'undefined';
+      	var isOpera = (!!window.opr && !!opr.addons) || !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
+
+      	///////////////////////Mouse_Control//////////////////////////
+      	document.addEventListener("DOMContentLoaded",init, false);
+      	var mouseclick=false;
+      	function init(){
+      		canvas.addEventListener("mousemove",mouseMoveFunction,false);
+      		canvas.addEventListener("mouseout",mouseOutFunction,false);
+			canvas.addEventListener("mousedown",mouseDownFunction,false);
+			canvas.addEventListener("mouseup",mouseUpFunction,false);
+			if(isChrome==true||isOpera==true)
+				canvas.addEventListener('mousewheel',mouseWheelFunction);
+			else if(isFirefox==true)
+				canvas.addEventListener('DOMMouseScroll',mouseWheelFunction);
+      	}
+      	//////////////////////////////////////////////////////////////
+
+		var arrow = {
+			x: 400,
+			y: 200,
+			height: 20,
+			width: 2,
+		};
+
+      	var imageX=-arrow.x+600;
+      	var imageHeight;
+
+      	//////////////////////////Mouse_Control/////////////////////////////
+      	function loadCursorPositionAndChangeArrowPosition(event) {//XDXDXD
+      		var rect = canvas.getBoundingClientRect();
+			xPos=Math.round((event.clientX-rect.left+0.5)/1.5);
+			yPos=Math.round((event.clientY-rect.top+0.8125)/1.5);
+			arrow.x=xPos;
+			arrow.y=yPos+arrow.height;
+      	}
+		function mouseDownFunction(event) {
+			loadCursorPositionAndChangeArrowPosition(event);
+			mouseclick=true;
+			draw();
+		}
+		function mouseMoveFunction(event) {
+			if(mouseclick==true)
+			{
+				loadCursorPositionAndChangeArrowPosition(event);
+				draw();
+			}
+		}
+		function mouseUpFunction(event) {
+			mouseclick=false;
+			draw();
+		}
+		function mouseOutFunction(event) {
+			mouseclick=false;
+			draw();
+		}
+		function mouseWheelFunction(event){
+			var delta = event.wheelDelta ? event.wheelDelta : -event.detail;
+			if(delta==120||delta==3){
+				arrow.height+=2;
+				draw();
+			}
+			else if((delta==-120||delta==-3)&&arrow.height>0){
+				arrow.height-=2;
+				draw();
+			}
+		}
+		///////////////////////////////////////////////////////////////////
+
+      	function drawLine(fromX,fromY,toX,toY,lenght,solid){
+			c.beginPath();
+			c.strokeStyle=linesColor;
+			c.lineWidth=1;
+			if(solid===true)c.setLineDash([]);
+			else c.setLineDash([3, 3]);
+			if(lenght===false) lenght=1;
+			else lenght+=1;
+			var centerX = (fromX+toX)/2;
+			var centerY = (fromY+toY)/2;
+			c.moveTo(fromX,fromY);
+			c.lineTo((lenght+1)*centerX-lenght*fromX,(lenght+1)*centerY-lenght*fromY);
+			c.stroke();
+			c.closePath();
+		}
+
+		if (canvas.getContext) {
+		    var c = canvas.getContext('2d');
+		    c.scale(1.5,1.5);
+
+		    window.addEventListener("load",draw);
+
+		    function draw() {
+				c.clearRect(0, 0, canvas.width, canvas.height);
+				drawLines();
+				drawArrow();
+				drawImage();
+				drawFlatMirror();
+				drawParameters();
+				drawInstruction();
+			}
+
+		    function drawFlatMirror() {
+				c.beginPath();
+				c.strokeStyle=mirrorColor;
+				c.lineWidth=4;
+				c.moveTo(300,330);
+				c.lineTo(300,0);
+        		c.stroke();
+        		c.closePath();
+			}
+
+			function drawLines() {
+				if(arrow.x!=300) {
+					//Górna pozioma:
+					drawLine(arrow.x,arrow.y-arrow.height,300,arrow.y-arrow.height,false,true);
+					//Górna pozioma pozorna:
+					drawLine(300,arrow.y-arrow.height,imageX,arrow.y-arrow.height,2,false);
+
+					//Dolna pozioma:
+					drawLine(arrow.x,arrow.y,300,arrow.y,false,true);
+					//Dolna pozioma pozorna:
+					drawLine(300,arrow.y,imageX,arrow.y,2,false);
+					
+					//Prawa dolna:
+					drawLine(arrow.x,arrow.y,300,arrow.y+50,false,true);
+					//Prawa dolna odbita:
+					drawLine(300,arrow.y+50,arrow.x,arrow.y+100,2,true);
+					//Prawa dolna pozorna:
+					drawLine(300,arrow.y+50,imageX,arrow.y,2,false);
+
+					//Prawa górna:
+					drawLine(arrow.x,arrow.y-arrow.height,300,arrow.y-arrow.height-50,false,true);
+					//Prawa górna odbita:
+					drawLine(300,arrow.y-arrow.height-50,arrow.x,arrow.y-arrow.height-100,2,true);
+					//Prawa górna pozorna:
+					drawLine(300,arrow.y-arrow.height-50,imageX,arrow.y-arrow.height,2,false);
+				}
+			}
+
+			function drawArrow() {
+				c.beginPath();
+				c.setLineDash([]);
+				c.lineWidth=arrow.width;
+				c.strokeStyle="#116af9";
+				c.moveTo(arrow.x,arrow.y);
+				c.lineTo(arrow.x,arrow.y-arrow.height);
+				c.moveTo(arrow.x,arrow.y-arrow.height);
+				c.lineTo(arrow.x-4,arrow.y-arrow.height+4);
+				c.moveTo(arrow.x,arrow.y-arrow.height);
+				c.lineTo(arrow.x+4,arrow.y-arrow.height+4);
+				c.stroke();
+				c.closePath();
+			}
+
+			function drawImage() {
+				imageX = -arrow.x+600;
+				imageHeight= arrow.height;
+				c.beginPath();
+				c.setLineDash([]);
+				c.lineWidth=arrow.width;
+				c.strokeStyle="#e8273d";
+				c.moveTo(imageX,arrow.y);
+				c.lineTo(imageX,arrow.y-imageHeight);
+				c.moveTo(imageX,arrow.y-imageHeight);
+				c.lineTo(imageX-4,arrow.y-imageHeight+4);
+				c.moveTo(imageX,arrow.y-imageHeight);
+				c.lineTo(imageX+4,arrow.y-imageHeight+4);
+				c.stroke();
+				c.closePath();
+			}
+
+			function drawParameters() {
+				c.beginPath();
+        		c.fillStyle=parametersColor;
+        		c.font = '10pt Comic Sans MS';
+        		c.fillText('Odległość przedmiotu od zwierciadła: '+Math.abs((arrow.x-300)/100)+'m',0,350);
+        		c.fillText('Odległość obrazu od zwierciadła: '+Math.abs(Math.round(arrow.x-300)/100)+'m',0,365);
+        		c.fillText('Wysokość przedmiotu: '+arrow.height/100+'m',0,380);
+        		c.fillText('Wysokość obrazu: '+Math.abs(Math.round(imageHeight)/100)+'m',0,395);
+				c.fillText('Obraz pozorny prosty tej samej wysokosci',300,395);
+        		c.closePath();
+			}
+
+			function drawInstruction() {
+				c.beginPath();
+        		c.fillStyle=parametersColor;
+        		c.font = '10pt Comic Sans MS';
+				c.fillText('Sterowanie- klawiatura:',0,10);
+				c.font = '7pt Comic Sans MS';
+				c.fillText('- użyj strzałek lewo/prawo aby przesuwać przedmiot',0,22);
+				c.fillText('- użyj strzałek góra/dół aby przesuwać przedmiot',0,34);
+				c.fillText('- użyj klawiszy +/- aby zmieniać rozmiar przedmiotu',0,46);
+				c.font = '10pt Comic Sans MS';
+				c.fillText('Sterowanie- mysz:',370,10);
+				c.font = '7pt Comic Sans MS';
+				c.fillText('- użyj kółka myszy aby zmienić wysokość przedmiotu',370,22);
+				c.fillText('- użyj myszki klikając na układ współrzędnych',370,34);
+				c.fillText('  aby zmienić położenie przedmiotu',370,46);
+				c.closePath();
+			}
+			
+		}
+
+		document.addEventListener("keydown", function(e) {
+			var key = e.keyCode ? e.keyCode : e.which;
+			//alert(e.keyCode);
+			if (key === 39||key===68) {
+				arrow.x+=1;
+				draw();
+			}
+			else if(key===37||key===65){
+				arrow.x-=1;
+				draw();
+			}
+			else if(key===38||key===87){
+				arrow.y-=1;
+				draw();
+			}
+			else if(key===40||key===83){
+				arrow.y+=1;
+				draw();
+			}
+			else if(key===109){
+				if(arrow.height>0){
+					arrow.height-=1;
+					draw();
+				}
+			}
+			else if(key===107){
+				arrow.height+=1;
+				draw();
+			}
+		});
+
+    </script>
+</body>
+</html>

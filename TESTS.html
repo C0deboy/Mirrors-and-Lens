@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+	
+	<title>Zwierciadło kuliste</title>
+	
+	<meta name="description" content="Opis w Google" />
+	<meta name="keywords" content="słowa, kluczowe, wypisane, po, porzecinku" />
+	<link rel="stylesheet" href="style.css">
+	
+</head>
+
+<body>
+	<ul>
+		<a href="FlatMirror.html"><li>Zwierciadło płaskie</li></a>
+		<a href="CurvedMirror.html"><li>Zwierciadło kuliste</li></a>
+		<a href="ConvergingLens.html"><li>Soczewka skupiająca</li></a>
+		<a href="DivergingLens.html"><li>Soczewka rozpraszająca</li></a>
+	</ul>
+	
+	<h2 class="title">Zwierciadło kuliste</h2>
+
+	<canvas width="900" height="600" id="canvas"></canvas>
+
+	<script type="text/javascript">
+      	
+      	var canvas = document.getElementById('canvas');
+
+      	var parametersColor="#c9cfd8";
+      	var linesColor="#c45050";
+      	var mirrorColor="SkyBlue";
+      	var axisColor="White";
+      	
+		var arrow = 
+		{
+			x: 400,
+			y: 200,
+			height: 20,
+			width: 2,
+		};
+
+		var pow=8;//Lines lenght
+      	var radius=100;
+      	var imageX;
+      	var imageHeight;
+
+		if (canvas.getContext) {
+
+		    var c = canvas.getContext('2d');
+		    c.scale(1.5,1.5);
+
+		    function draw(){
+				c.clearRect(0, 0, canvas.width, canvas.height);
+				
+				drawFirstLine();
+				//drawSecondLine();
+				//drawThirdLine();
+				drawArrow();
+				drawImage();
+				drawCurvedMirror();
+				drawParameters();
+			}
+
+			draw();
+
+		    function drawCurvedMirror() 
+		    {
+		    	c.beginPath();
+		    	c.strokeStyle=axisColor;
+		    	c.setLineDash([]);
+				c.moveTo(0,200);
+				c.lineTo(600,200);
+				c.lineWidth=1;
+				c.stroke();
+				c.closePath();
+
+				for (var i=0; i<=900; i+=20){
+        			c.beginPath();
+	       			c.moveTo(i,202);
+					c.lineTo(i,198);
+	        		c.stroke();
+	        		c.closePath();
+        		}
+
+				c.beginPath();
+				c.strokeStyle=mirrorColor;
+				c.setLineDash([]);
+       			c.arc(300+radius,200,radius, Math.PI/2, Math.PI*3/2,false);
+       			c.lineWidth=4;
+        		c.stroke();
+        		c.closePath();
+
+				c.beginPath();
+				c.strokeStyle=axisColor;
+				c.font = '10pt Comic Sans MS';
+       			c.arc(300+radius/2,200,1, 0, Math.PI*2,true);
+       			c.lineWidth=1;
+        		c.stroke();
+        		c.fillStyle=parametersColor;
+        		c.fillText('F',300+radius/2,215);
+        		c.closePath();
+
+	        	c.beginPath();
+	        	c.strokeStyle=axisColor;
+	        	c.font = '10pt Comic Sans MS';
+       			c.arc(300+radius,200,1, 0, Math.PI*2,true);
+        		c.stroke();
+        		c.fillStyle=parametersColor;
+        		c.fillText('O',300+radius,215);
+        		c.closePath();
+
+        		c.beginPath();
+        		c.fillStyle=parametersColor;
+        		c.font = '10pt Comic Sans MS';
+        		c.fillText('[0.2m]',0,220);
+        		c.closePath();
+			}
+
+			function drawFirstLine() {
+
+				var lineEnd=false;//Loop control
+				var count=0;
+				var xMirrorPoint;//Cross point x
+				var yMirrorPoint;//Croos point y
+				var pointX;
+				var pointY;
+				var a;//Line a
+				var b;//Line b
+				//Final variables:
+				var A = 300+radius;//Circle point x
+				var B = 200;//Circle point y
+				var C;
+				var r = radius;
+				
+				while(lineEnd==false)
+				{
+					if(pointX==null&&pointY==null)
+					{
+						a = 0;
+						b = arrow.y-arrow.height;
+						pointX = arrow.x;
+						pointY = arrow.y-arrow.height;
+					}
+					else
+					{
+						a = (pointY-yMirrorPoint)/(pointX-xMirrorPoint);
+						b = (xMirrorPoint*pointY-pointX*yMirrorPoint)/(xMirrorPoint-pointX);
+					}
+					C = b-B;
+					var sqrt = 2*Math.sqrt(Math.pow(a,2)*Math.pow(r,2)+Math.pow(r,2)-Math.pow(C,2)-Math.pow(a,2)*Math.pow(A,2)-2*a*A*C);
+					var xOne = (2*A-2*a*C-sqrt)/(2*Math.pow(a,2)+2);
+					var xTwo = (2*A-2*a*C+sqrt)/(2*Math.pow(a,2)+2);
+					if(xOne<=A)xMirrorPoint = xOne;
+					else if(xOne>A)xMirrorPoint = xTwo;
+					yMirrorPoint = a*xMirrorPoint+b;
+					
+
+					c.beginPath();
+					c.strokeStyle=linesColor;
+					c.setLineDash([]);
+					if(a=0)
+					{
+						c.moveTo(pointX,pointY);
+						c.lineTo(xMirrorPoint,yMirrorPoint);
+					}
+					else
+					{
+						c.moveTo(xMirrorPoint,yMirrorPoint);
+						c.lineTo(pointX,pointY);
+					}
+					c.stroke();
+					c.closePath();
+					
+
+					radiusA = (B-yMirrorPoint)/(A-xMirrorPoint);
+					radiusB = (xMirrorPoint*B-A*yMirrorPoint)/(xMirrorPoint-A);
+					pointLineA = -(1/radiusA);
+					pointLineB = pointY-(pointX*pointLineA);
+					croosPointY = (pointLineB-radiusB)/(radiusA-pointLineA)/2;
+					newPointY = 2*croosPointY-pointY;
+					newPointX = (newPointY-pointLineB)/pointLineA;
+					pointX=newPointX;
+					pointY=newPointY;
+
+					//alert(croosPointY);
+
+					count++;
+					if(count==2)lineEnd=true;
+				}
+
+				// if(true) {
+
+				// 	var a = -(200-yMirrorPoint)/(300+radius-xMirrorPoint);
+				// 	var b = yMirrorPoint-a*xMirrorPoint;
+				// 	var previousX = xMirrorPoint;
+				// 	var previousY = yMirrorPoint;
+				// 	var A = 300+radius;
+				// 	var B = 200;
+				// 	var C = b-B;
+				// 	var r = radius;
+				// 	var sqrt = 2*Math.sqrt(Math.pow(a,2)*Math.pow(r,2)+Math.pow(r,2)-Math.pow(C,2)-Math.pow(a,2)*Math.pow(A,2)-2*a*A*C);
+				// 	var xOne = (2*A-2*a*C-sqrt)/(2*Math.pow(a,2)+2);
+				// 	var xTwo = (2*A-2*a*C+sqrt)/(2*Math.pow(a,2)+2);
+				// 	if(xOne<=A)xMirrorPoint = xOne;
+				// 	else if(xOne>A)xMirrorPoint = xTwo;
+				// 	yMirrorPoint = a*xMirrorPoint+b;
+
+				// 	c.beginPath();
+				// 	c.strokeStyle=linesColor;
+				// 	c.setLineDash([]);
+				// 	c.moveTo(previousX,previousY);
+				// 	c.lineTo(xMirrorPoint,yMirrorPoint);
+				// 	c.stroke();
+				// 	c.closePath();
+
+
+				// }
+
+
+				// if(true) {
+				// 	var a = (arrow.y-arrow.height-200)/(arrow.x-300-radius/2);
+				// 	var b = (arrow.x*200-(300+radius/2)*(arrow.y-arrow.height))/(arrow.x-300-radius/2);
+				// 	var A = 300+radius;
+				// 	var B = 200;
+				// 	var C = b-B;
+				// 	var r = radius;
+				// 	var sqrt = 2*Math.sqrt(Math.pow(a,2)*Math.pow(r,2)+Math.pow(r,2)-Math.pow(C,2)-Math.pow(a,2)*Math.pow(A,2)-2*a*A*C);
+				// 	var xOne = (2*A-2*a*C-sqrt)/(2*Math.pow(a,2)+2);
+				// 	var xTwo = (2*A-2*a*C+sqrt)/(2*Math.pow(a,2)+2);
+				// 	var xMirrorPoint;
+				// 	var yMirrorPoint;
+				// 	if(xOne<A)xMirrorPoint = xOne;
+				// 	else if(xOne>A)xMirrorPoint = xTwo;
+				// 	yMirrorPoint = a*xMirrorPoint+b;
+
+				// 	c.beginPath();
+				// 	c.strokeStyle=linesColor;
+				// 	c.setLineDash([]);
+				// 	c.moveTo(arrow.x,arrow.y-arrow.height);
+				// 	c.lineTo(xMirrorPoint,yMirrorPoint);
+				// 	c.stroke();
+				// 	c.closePath();
+
+				// }
+
+				//a=(y2-y1)/(x2-x1)
+				//b=(x1y2-x2y1)/(x1-x2)
+
+				
+				// if(true) {
+				// 	var a = 0;
+				// 	var b = arrow.y-arrow.height;
+				// 	var A = 300+radius;
+				// 	var B = 200;
+				// 	var C = b-B;
+				// 	var r = radius;
+				// 	var sqrt = 2*Math.sqrt(Math.pow(a,2)*Math.pow(r,2)+Math.pow(r,2)-Math.pow(C,2)-Math.pow(a,2)*Math.pow(A,2)-2*a*A*C);
+				// 	var xOne = (2*A-2*a*C-sqrt)/(2*Math.pow(a,2)+2);
+				// 	var xTwo = (2*A-2*a*C+sqrt)/(2*Math.pow(a,2)+2);
+				// 	if(xOne<=A)xMirrorPoint = xOne;
+				// 	else if(xOne>A)xMirrorPoint = xTwo;
+				// 	yMirrorPoint = a*xMirrorPoint+b;
+
+				// 	c.beginPath();
+				// 	c.strokeStyle=linesColor;
+				// 	c.setLineDash([]);
+				// 	c.moveTo(arrow.x,arrow.y-arrow.height);
+				// 	c.lineTo(xMirrorPoint,yMirrorPoint);
+				// 	c.stroke();
+				// 	c.closePath();
+
+				// }
+				// if(true) {
+
+				// 	c.beginPath();
+				// 	c.strokeStyle=linesColor;
+				// 	c.setLineDash([]);
+				// 	c.moveTo(xMirrorPoint,yMirrorPoint);
+
+				// 	var a = (200-yMirrorPoint)/(300+radius/2-xMirrorPoint);
+				//  	var b = (xMirrorPoint*200-(300+radius/2)*yMirrorPoint)/(xMirrorPoint-300-radius/2);
+				// 	var A = 300+radius;
+				// 	var B = 200;
+				// 	var C = b-B;
+				// 	var r = radius;
+				// 	var sqrt = 2*Math.sqrt(Math.pow(a,2)*Math.pow(r,2)+Math.pow(r,2)-Math.pow(C,2)-Math.pow(a,2)*Math.pow(A,2)-2*a*A*C);
+				// 	var xOne = (2*A-2*a*C-sqrt)/(2*Math.pow(a,2)+2);
+				// 	var xTwo = (2*A-2*a*C+sqrt)/(2*Math.pow(a,2)+2);
+				// 	// if(xOne<=A)xMirrorPoint = xOne;
+				// 	// else if(xOne>A)xMirrorPoint = xTwo;
+				// 	xMirrorPoint=xTwo;
+				// 	yMirrorPoint = a*xMirrorPoint+b;
+					
+
+				// 	c.lineTo(xMirrorPoint,yMirrorPoint);
+				// 	c.stroke();
+				// 	c.closePath();
+
+				// }
+
+
+
+
+
+			}
+
+			function drawSecondLine() {
+
+				
+
+				// if(arrow.x<(300+radius/2)&& arrow.x>300) c.lineTo(2*(300+radius)-((pow+1)*(300+radius)-(arrow.x)*pow),400-((pow+1)*200-(arrow.y-arrow.height)*pow));
+				// c.moveTo(arrow.x,arrow.y-arrow.height);
+				// c.lineTo((300+radius),200);
+				// c.lineTo(((pow+1)*(300+radius)-(arrow.x)*pow),((pow+1)*200-(arrow.y-arrow.height)*pow));
+
+				c.beginPath();
+				c.strokeStyle=linesColor;
+				c.setLineDash([]);
+				c.moveTo(arrow.x,arrow.y-arrow.height);
+				c.lineTo(300,200);
+				if(arrow.x<(300+radius/2))
+					c.lineTo(pow*(imageX+300)-300*(pow-1),pow*(arrow.y+imageHeight)-200*(pow-1));
+				c.moveTo(300,200);
+				c.lineTo(pow*arrow.x-300*(pow-1),pow*(arrow.y+arrow.height)-200*(pow-1));
+				c.stroke();
+				c.closePath()
+			}
+
+			function drawArrow() {
+		c.beginPath();
+		c.setLineDash([]);
+		c.lineWidth=arrow.width;
+		c.strokeStyle="#116af9";
+		c.moveTo(arrow.x,arrow.y);
+	c.lineTo(arrow.x,arrow.y-arrow.height);
+	c.moveTo(arrow.x,arrow.y-arrow.height);
+	if(arrow.height<0){
+		c.lineTo(arrow.x-4,arrow.y-arrow.height-4);
+		c.moveTo(arrow.x,arrow.y-arrow.height);
+		c.lineTo(arrow.x+4,arrow.y-arrow.height-4);
+	}
+	else {
+		c.lineTo(arrow.x-4,arrow.y-arrow.height+4);
+		c.moveTo(arrow.x,arrow.y-arrow.height);
+		c.lineTo(arrow.x+4,arrow.y-arrow.height+4);
+	}
+	c.stroke();
+	c.closePath();
+}
+
+function drawImage() {
+	imageX = ((arrow.x-300)*(radius/2))/(arrow.x-300-radius/2);
+	imageHeight=(arrow.height*imageX)/(arrow.x-300);
+	c.beginPath();
+	c.setLineDash([]);
+	c.lineWidth=arrow.width;
+	c.strokeStyle="#e8273d";
+	c.moveTo(imageX+300,arrow.y);
+	c.lineTo(imageX+300,arrow.y+imageHeight);
+	c.moveTo(imageX+300,arrow.y+imageHeight);
+	if(imageHeight<0){
+		c.lineTo(imageX+300-4,arrow.y+imageHeight+4);
+		c.moveTo(imageX+300,arrow.y+imageHeight);
+		c.lineTo(imageX+300+4,arrow.y+imageHeight+4);
+	}
+	else {
+		c.lineTo(imageX+300-4,arrow.y+imageHeight-4);
+		c.moveTo(imageX+300,arrow.y+imageHeight);
+		c.lineTo(imageX+300+4,arrow.y+imageHeight-4);
+	}
+	c.stroke();
+	c.closePath();
+	
+}
+
+			function drawThirdLine() {
+
+
+
+			}
+
+			function drawParameters() {
+				c.beginPath();
+        		c.fillStyle=parametersColor;
+        		c.font = '10pt Comic Sans MS';
+        		c.fillText('Ogniskowa zwierciadła: '+radius/2/100+'m',0,335);
+        		c.fillText('Odległość przedmiotu od zwierciadła: '+Math.abs((arrow.x-300)/100)+'m',0,350);
+        		c.fillText('Odległość obrazu od zwierciadła: '+Math.abs(Math.round(imageX)/100)+'m',0,365);
+        		c.fillText('Wysokość przedmiotu: '+arrow.height/100+'m',0,380);
+        		c.fillText('Wysokość obrazu: '+Math.abs(Math.round(imageHeight)/100)+'m',0,395);
+
+        		var type1;//pozorny/rzeczywisty
+        		var type2;//odwrocony/prosty
+        		var type3;//powiekszony/pomniejszony
+        		if(arrow.x<(300+radius/2)) type1="pozorny";
+        		else type1="rzeczywisty";
+        		if(arrow.x>(300+radius/2)) type2="odwrócony";
+        		else type2="prosty";
+        		if(arrow.x>(300+radius) || arrow.x<300) type3="pomniejszony";
+        		else if(arrow.x==(300+radius)) type3="taki sam";
+        		else type3="powiekszony";
+        		if(arrow.x==300+radius/2)c.fillText('Obraz nie powstaje',300,395);
+        		else c.fillText('Obraz  '+type1+" "+type2+" "+type3,300,395);
+        		c.closePath();
+			}
+			
+		}
+
+		document.addEventListener("keydown", function(e) {
+		
+			var key = e.keyCode ? e.keyCode : e.which;
+			//alert(e.keyCode);
+			if (key === 39||key===68) {
+				arrow.x+=1;
+				draw();
+			}
+			else if(key===37||key===65){
+				arrow.x-=1;
+				draw();
+			}
+			else if(key===38||key===87){
+				if(arrow.height<radius){
+					arrow.height+=1;
+					draw();
+				}
+			}
+			else if(key===40||key===83){
+				if(-arrow.height<radius){
+					arrow.height-=1;
+					draw();
+				}
+			}
+			else if(key===109){
+				if(radius>50){
+					radius--;
+					draw();
+				}
+			}
+			else if(key===107){
+				if(radius<180){
+					radius++;
+					draw();
+				}
+			}
+		});
+
+    </script>
+</body>
+</html>

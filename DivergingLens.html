@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+	<title>Soczewka rozpraszająca</title>
+	<meta name="description" content="Opis w Google" />
+	<meta name="keywords" content="słowa, kluczowe, wypisane, po, porzecinku" />
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<ul>
+		<a href="FlatMirror.html"><li>Zwierciadło płaskie</li></a>
+		<a href="CurvedMirror.html"><li>Zwierciadło kuliste</li></a>
+		<a href="ConvergingLens.html"><li>Soczewka skupiająca</li></a>
+		<a href="DivergingLens.html"><li>Soczewka rozpraszająca</li></a>
+	</ul>
+	<h2 class="title">Soczewka rozpraszająca</h2><br />
+	<canvas width="900" height="600" id="canvas"></canvas>
+	<script type="text/javascript">
+      	
+      	var canvas = document.getElementById('canvas');
+
+      	var parametersColor="#c9cfd8";
+      	var linesColor="#c45050";
+      	var mirrorColor="SkyBlue";
+      	var axisColor="White";
+
+      	//Browser detection:
+      	var isChrome = !!window.chrome && !!window.chrome.webstore;
+      	var isFirefox = typeof InstallTrigger !== 'undefined';
+      	var isOpera = (!!window.opr && !!opr.addons) || !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
+
+      	///////////////////////Mouse_Control//////////////////////////
+      	document.addEventListener("DOMContentLoaded",init, false);
+      	var mouseclick=false;
+      	function init(){
+      		canvas.addEventListener("mousemove",mouseMoveFunction,false);
+      		canvas.addEventListener("mouseout",mouseOutFunction,false);
+			canvas.addEventListener("mousedown",mouseDownFunction,false);
+			canvas.addEventListener("mouseup",mouseUpFunction,false);
+			if(isChrome==true||isOpera==true)
+				canvas.addEventListener('mousewheel',mouseWheelFunction);
+			else if(isFirefox==true)
+				canvas.addEventListener('DOMMouseScroll',mouseWheelFunction);
+      	}
+      	//////////////////////////////////////////////////////////////
+      	
+		var arrow = {
+			x: 400,
+			y: 200,
+			height: 20,
+			width: 2,
+		};
+
+		var pow=8;//<--- Lines lenght power scale
+      	var radius=100;
+      	var imageX;
+      	var imageHeight;
+
+      	//////////////////////////Mouse_Control/////////////////////////////
+      	function loadCursorPositionAndChangeArrowPosition(event) {//XDXDXD
+      		var rect = canvas.getBoundingClientRect();
+			xPos=Math.round((event.clientX-rect.left+0.5)/1.5);
+			yPos=Math.round((event.clientY-rect.top+0.8125)/1.5);
+			arrow.x=xPos;
+			if((yPos>(165-radius/4.5))&&(yPos<(235+radius/4.5)))
+				arrow.height=200-yPos;	
+      	}
+		function mouseDownFunction(event) {
+			loadCursorPositionAndChangeArrowPosition(event);
+			mouseclick=true;
+			draw();
+		}
+		function mouseMoveFunction(event) {
+			if(mouseclick==true)
+			{
+				loadCursorPositionAndChangeArrowPosition(event);
+				draw();
+			}
+		}
+		function mouseUpFunction(event) {
+			mouseclick=false;
+			draw();
+		}
+		function mouseOutFunction(event) {
+			mouseclick=false;
+			draw();
+		}
+		function mouseWheelFunction(event){
+			var delta = event.wheelDelta ? event.wheelDelta : -event.detail;
+			if((delta==120||delta==3)&&radius<280){
+				radius+=2;
+				draw();
+			}
+			else if((delta==-120||delta==-3)&&radius>40&&(arrow.y-arrow.height)>(165-radius/4.5)&&(arrow.y-arrow.height)<(235+radius/4.5)){
+				radius-=2;
+				draw();
+			}
+		}
+		///////////////////////////////////////////////////////////////////
+
+		function drawLine(fromX,fromY,toX,toY,lenght,solid) {
+			c.beginPath();
+			c.strokeStyle=linesColor;
+			c.lineWidth=1;
+			if(solid===true)c.setLineDash([]);
+			else c.setLineDash([3, 3]);
+			if(lenght===false) lenght=1;
+			else lenght+=1;
+			var centerX = (fromX+toX)/2;
+			var centerY = (fromY+toY)/2;
+			c.moveTo(fromX,fromY);
+			c.lineTo((lenght+1)*centerX-lenght*fromX,(lenght+1)*centerY-lenght*fromY);
+			c.stroke();
+			c.closePath();
+		}
+
+		if (canvas.getContext) {
+
+		    var c = canvas.getContext('2d');
+		    c.scale(1.5,1.5);
+
+		    function draw() {
+				
+				c.clearRect(0, 0, canvas.width, canvas.height);
+				drawLines();
+				drawArrow();
+				drawImage();
+				drawDivergingLens();
+				drawParameters();
+				drawInstruction();
+			}
+
+			draw();
+
+		    function drawDivergingLens() {
+
+		    	//Axis drawing:
+		    	c.beginPath();
+		    	c.strokeStyle=axisColor;
+		    	c.setLineDash([]);
+				c.moveTo(0,200);
+				c.lineTo(600,200);
+				c.lineWidth=1;
+				c.stroke();
+				c.closePath();
+				
+				for (var i=0; i<=900; i+=20){
+        			c.beginPath();
+	       			c.moveTo(i,202);
+					c.lineTo(i,198);
+	        		c.stroke();
+	        		c.closePath();
+        		}
+
+    			//Lens drawing- 1st half:
+    			c.beginPath();
+				c.strokeStyle=mirrorColor;
+				c.setLineDash([]);
+       			c.arc(100-radius,200,199+0.98*radius, Math.PI*(1.94-(radius/40000)), Math.PI*(0.06+(radius/40000)),false);
+       			c.lineWidth=4;
+        		c.stroke();
+        		c.closePath();
+        		//Lens drawing- 2nd half:
+        		c.beginPath();
+				c.strokeStyle=mirrorColor;
+				c.setLineDash([]);
+       			c.arc(500+radius,200,199+0.98*radius, Math.PI*(1.06+(radius/40000)), Math.PI*(0.94-(radius/40000)),true);
+       			c.lineWidth=4;
+        		c.stroke();
+        		c.closePath();
+        		//Marginal lines drawing:
+        		c.beginPath();
+				c.strokeStyle=mirrorColor;
+				c.setLineDash([]);
+				c.moveTo(295-radius/20,165-radius/4.5);
+				c.lineTo(305+radius/20,165-radius/4.5);
+				c.moveTo(295-radius/20,235+radius/4.5);
+				c.lineTo(305+radius/20,235+radius/4.5);
+				c.lineWidth=4;
+				c.stroke();
+				c.closePath();
+				//'F' 1st point drawing:
+				c.beginPath();
+				c.strokeStyle=axisColor;
+				c.font = '10pt Comic Sans MS';
+       			c.arc(300+radius/2,200,1, 0, Math.PI*2,true);
+       			c.lineWidth=1;
+        		c.stroke();
+        		c.fillStyle=parametersColor;
+        		c.fillText('F',300+radius/2,215);
+        		c.closePath();
+        		//'O' 1st point drawing:
+	        	c.beginPath();
+	        	c.strokeStyle=axisColor;
+	        	c.font = '10pt Comic Sans MS';
+       			c.arc(300+radius,200,1, 0, Math.PI*2,true);
+        		c.stroke();
+        		c.fillStyle=parametersColor;
+        		c.fillText('O',300+radius,215);
+        		c.closePath();
+				//'F' 2nd point drawing:
+				c.beginPath();
+				c.strokeStyle=axisColor;
+				c.font = '10pt Comic Sans MS';
+       			c.arc(300-radius/2,200,1, 0, Math.PI*2,true);
+       			c.lineWidth=1;
+        		c.stroke();
+        		c.fillStyle=parametersColor;
+        		c.fillText('F',300-radius/2,215);
+        		c.closePath();
+				//'O' 2nd point drawing:
+				c.beginPath();
+	        	c.strokeStyle=axisColor;
+	        	c.font = '10pt Comic Sans MS';
+       			c.arc(300-radius,200,1, 0, Math.PI*2,true);
+        		c.stroke();
+        		c.fillStyle=parametersColor;
+        		c.fillText('O',300-radius,215);
+        		c.closePath();
+        		//Scale drawing:
+        		c.beginPath();
+        		c.fillStyle=parametersColor;
+        		c.font = '10pt Comic Sans MS';
+        		c.fillText('[0.2m]',0,220);
+        		c.closePath();
+			}
+
+			function drawLines() {
+
+				//Straight line from arrow to lens:
+				drawLine(arrow.x,arrow.y-arrow.height,300,arrow.y-arrow.height,false,true);
+
+				if(arrow.x>300) {
+					//Curved top left line:
+					drawLine(300,arrow.y-arrow.height,(pow+1)*(300-radius/2)-pow*(300+radius/2),(pow+1)*(2*(arrow.y-arrow.height)-200)-pow*200,false,true);
+					//Top right line extension:
+					drawLine(300,arrow.y-arrow.height,2*(300+radius/2)-((pow+1)*(300-radius/2)-pow*(300+radius/2)),400-((pow+1)*(2*(arrow.y-arrow.height)-200)-pow*200),false,false);
+				}
+				else if(arrow.x<300) {
+					//Curved top right line:
+					drawLine(300,arrow.y-arrow.height,(pow+1)*(300+radius/2)-pow*(300-radius/2),(pow+1)*(2*(arrow.y-arrow.height)-200)-pow*200,false,true);
+					//Top left line extension:
+					drawLine(300,arrow.y-arrow.height,2*(300-radius/2)-((pow+1)*(300+radius/2)-pow*(300-radius/2)),400-((pow+1)*(2*(arrow.y-arrow.height)-200)-pow*200),false,false);
+				}
+				if(arrow.x!=300) {
+					//Bottom lines:
+					drawLine(arrow.x,arrow.y-arrow.height,(pow+1)*300-pow*arrow.x,(pow+1)*200-(pow)*(arrow.y-arrow.height),false,true);
+				}
+				
+			}
+
+			function drawArrow() {
+
+				//Arrow drawing:
+				c.beginPath();
+				c.setLineDash([]);
+				c.lineWidth=arrow.width;
+				c.strokeStyle="#116af9";
+				c.moveTo(arrow.x,arrow.y);
+				c.lineTo(arrow.x,arrow.y-arrow.height);
+				c.moveTo(arrow.x,arrow.y-arrow.height);
+				if(arrow.height<0){
+					c.lineTo(arrow.x-4,arrow.y-arrow.height-4);
+					c.moveTo(arrow.x,arrow.y-arrow.height);
+					c.lineTo(arrow.x+4,arrow.y-arrow.height-4);
+				}
+				else {
+					c.lineTo(arrow.x-4,arrow.y-arrow.height+4);
+					c.moveTo(arrow.x,arrow.y-arrow.height);
+					c.lineTo(arrow.x+4,arrow.y-arrow.height+4);
+				}
+				c.stroke();
+				c.closePath();
+			}
+
+			function drawImage() {
+
+				if(arrow.x>300) {
+					imageX = ((arrow.x-300)*radius/2)/(arrow.x-300+radius/2);
+					imageHeight=-(arrow.height*imageX)/(arrow.x-300);
+				}
+				else if(arrow.x<300) {
+					imageX = -((300-arrow.x)*radius/2)/(300-arrow.x+radius/2);
+					imageHeight=(arrow.height*imageX)/(300-arrow.x);
+				}
+				else {
+					imageX=0;
+					imageHeight=0;
+				}
+				//Arrow image drawing:
+				c.beginPath();
+				c.setLineDash([]);
+				c.lineWidth=arrow.width;
+				c.strokeStyle="#e8273d";
+				c.moveTo(imageX+300,arrow.y);
+				c.lineTo(imageX+300,arrow.y+imageHeight);
+				c.moveTo(imageX+300,arrow.y+imageHeight);
+				if(imageHeight<0){
+					c.lineTo(imageX+300-4,arrow.y+imageHeight+4);
+					c.moveTo(imageX+300,arrow.y+imageHeight);
+					c.lineTo(imageX+300+4,arrow.y+imageHeight+4);
+				}
+				else {
+					c.lineTo(imageX+300-4,arrow.y+imageHeight-4);
+					c.moveTo(imageX+300,arrow.y+imageHeight);
+					c.lineTo(imageX+300+4,arrow.y+imageHeight-4);
+				}
+				c.stroke();
+				c.closePath();
+			}
+
+			function drawParameters() {
+
+				//Parameters drawing:
+				c.beginPath();
+        		c.fillStyle=parametersColor;
+        		c.font = '10pt Comic Sans MS';
+        		c.fillText('Ogniskowa soczewki: '+radius/2/100+'m',0,335);
+        		c.fillText('Odległość przedmiotu od soczewki: '+Math.abs((arrow.x-300)/100)+'m',0,350);
+        		c.fillText('Odległość obrazu od soczewki: '+Math.abs(Math.round(imageX)/100)+'m',0,365);
+        		c.fillText('Wysokość przedmiotu: '+Math.abs(arrow.height)/100+'m',0,380);
+        		c.fillText('Wysokość obrazu: '+Math.abs(Math.round(imageHeight)/100)+'m',0,395);
+
+        		if(arrow.x==300)c.fillText('Obraz nie powstaje',300,395);
+        		else c.fillText('Obraz pozorny pomniejszony',300,395);
+        		c.closePath();
+			}
+
+			function drawInstruction() {
+				c.beginPath();
+        		c.fillStyle=parametersColor;
+        		c.font = '10pt Comic Sans MS';
+				c.fillText('Sterowanie- klawiatura:',0,10);
+				c.font = '7pt Comic Sans MS';
+				c.fillText('- użyj strzałek lewo/prawo aby przesuwać przedmiot',0,22);
+				c.fillText('- użyj strzałek góra/dół aby przesuwać przedmiot',0,34);
+				c.fillText('- użyj klawiszy +/- aby zmieniać rozmiar przedmiotu',0,46);
+				c.font = '10pt Comic Sans MS';
+				c.fillText('Sterowanie- mysz:',370,10);
+				c.font = '7pt Comic Sans MS';
+				c.fillText('- użyj kółka myszy aby zmienić ogniskową',370,22);
+				c.fillText('- użyj myszki klikając na układ współrzędnych',370,34);
+				c.fillText('  aby zmienić położenie przedmiotu',370,46);
+				c.closePath();
+			}
+		}
+
+		document.addEventListener("keydown", function(e) {
+		
+			var key = e.keyCode ? e.keyCode : e.which;
+			//alert(e.keyCode);
+			if (key===39||key===68) {
+				arrow.x+=1;
+				draw();
+			}
+			else if(key===37||key===65){
+				arrow.x-=1;
+				draw();
+			}
+			else if(key===38||key===87){
+				if((arrow.y-arrow.height)>(165-radius/4.5)){
+					arrow.height+=1;
+					draw();
+				}
+			}
+			else if(key===40||key===83){
+				if((arrow.y-arrow.height)<(235+radius/4.5)){
+					arrow.height-=1;
+					draw();
+				}
+			}
+			else if(key===109){
+				if(radius>40&&(arrow.y-arrow.height)>(165-radius/4.5)&&(arrow.y-arrow.height)<(235+radius/4.5)){
+					radius--;
+					draw();
+				}
+			}
+			else if(key===107){
+				if(radius<280){
+					radius++;
+					draw();
+				}
+			}
+		});
+
+    </script>
+</body>
+</html>
